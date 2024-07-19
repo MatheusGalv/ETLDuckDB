@@ -1,0 +1,44 @@
+import os
+import gdown
+import duckdb
+import pandas as pd
+from sqlalchemy import create_engine
+from dotenv import load_dotenv
+
+load_dotenv()
+
+def baixar_pasta_google_drive(url_pasta, diretorio_local):
+    os.makedirs(diretorio_local, exist_ok=True)
+    gdown.download_folder(url_pasta, output=diretorio_local, quiet=False, use_cookies=False)
+
+def listar_arquivos_csv(diretorio):
+    arquivos_csv = []
+    todos_os_arquivos = os.listdir(diretorio)
+    for arquivo in todos_os_arquivos:
+        if arquivo.endswith(".csv"):
+            caminho_completo = os.path.join(diretorio, arquivo)
+            arquivos_csv.append(caminho_completo)
+    return arquivos_csv
+
+def ler_csv(caminho_do_arquivo):
+    return duckdb.read_csv(caminho_do_arquivo)
+
+def transformar(df):
+    df_transformado = duckdb.sql("SELECT *, quantidade * valor AS total_vendas FROM df").df()
+    return df_transformado
+
+def salvar_no_postgres(df_duckdb, tabela):
+    DATABASE_URL = os.getenv("DATABASE_URL") 
+    engine = create_engine(DATABASE_URL)
+    df_duckdb.to_sql(tabela, con=engine, if_exists='append', index=False)
+
+if __name__ == "__main__":
+    url_pasta = 'https://drive.google.com/drive/folders/1KWhAWYRBNGWS9Z_-UAokXVA_vv5ZBvOI'
+    diretorio_local = './pasta_gdown'
+
+    arquivos_csv = listar_arquivos_csv(diretorio_local)
+
+    for caminho_do_arquivo in arquivos_csv:
+        duck_db_df = ler_csv(caminho_do_arquivo)
+        pandas_df_transformado = transformar(duck_db_df)
+        salvar_no_postgres(pandas_df_transformado, "vendas_calculado")
