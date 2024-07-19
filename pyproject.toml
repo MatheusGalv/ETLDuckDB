@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "duckdb"
+name = "my_duckdb_project"
 version = "0.1.0"
 description = ""
 authors = ["Matheus Galvao <matheusgalvaoangelo@gmail.com>"]
@@ -7,6 +7,13 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
+gdown = "^5.2.0"
+duckdb = "^1.0.0"
+streamlit = "^1.36.0"
+psycopg2-binary = "^2.9.9"
+python-dotenv = "^1.0.1"
+psycopg2 = "^2.9.9"
+sqlalchemy = "^2.0.31"
 
 
 [build-system]
